@@ -471,6 +471,13 @@ export interface IQuestionService {
     batchSize?: number,
   ): Promise<{ data?: ObjectId[]; status: boolean }>;
 
+  /**
+   * Event-driven moderator-queue allocation (replaces the periodic moderator cron).
+   * Fire-and-forget; call after a question becomes a moderator candidate (→ in-review /
+   * pae_submitted) or a moderator is freed, once the caller's transaction has committed.
+   */
+  triggerModeratorQueueAllocation(context: string): void;
+
   /** Toggle auto allocation on/off */
   toggleAutoAllocate(
     questionId: string,
@@ -705,6 +712,8 @@ export interface IQuestionService {
     limit?: number,
     startTime?: Date,
     endTime?: Date,
+    isTrainingUser?: boolean,
+    isAdmin?: boolean,
   ): Promise<QueueSectionResult>;
 
   /**
@@ -891,5 +900,21 @@ export interface IQuestionService {
     suggestionSourceName?: string,
   ): Promise<{ success: boolean; message: string }>;
 
+
+  ensureNormalisedCrop(
+    questionId: string,
+    session?: ClientSession,
+  ): Promise<string | null>;
+
+  ensureNormalisedLocation(
+    questionId: string,
+    session?: ClientSession,
+  ): Promise<{valid: true}>;
+
+  freeRoleAssigneeOnStatusChange(
+    questionId: string,
+    newStatus?: string,
+    session?: ClientSession,
+  ): Promise<void>;
   getPaeValidationQueueDetails(params?: PaeValidationQueueParams): Promise<PaeValidationQueueDetails>;
 }
