@@ -27,7 +27,7 @@ from langchain_anthropic import ChatAnthropic
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
 from langchain_core.runnables import RunnableConfig
 
-from ajrasakha.agents.config import FOLLOW_UP_MODEL
+from ajrasakha.agents.config import FOLLOW_UP_MODEL, get_planner_chat_model
 from ajrasakha.agents.llm_trace import trace_llm_request, trace_llm_response
 from ajrasakha.agents.prompts import FOLLOW_UP_SYSTEM_PROMPT, FOLLOW_UP_TYPE_INSTRUCTIONS
 from ajrasakha.agents.state import AjraSakhaState
@@ -150,7 +150,7 @@ async def follow_up_node(state: AjraSakhaState, config: RunnableConfig) -> dict:
     ]
 
     try:
-        llm = ChatAnthropic(model=FOLLOW_UP_MODEL)
+        llm = get_planner_chat_model(default_claude_model=FOLLOW_UP_MODEL)
         trace_llm_request(
             "follow_up",
             model=FOLLOW_UP_MODEL,

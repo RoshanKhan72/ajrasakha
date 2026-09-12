@@ -11,7 +11,7 @@ from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, System
 from langchain_core.runnables import RunnableConfig
 
 from ajrasakha.agents.answer_footers import build_expert_queue_content, finalize_synthesis_answer
-from ajrasakha.agents.config import TRANSLATE_MODEL, resolve_question_source
+from ajrasakha.agents.config import TRANSLATE_MODEL, get_planner_chat_model, resolve_question_source
 from ajrasakha.agents.state import AjraSakhaState, TRANSLATE_PATH_EMPTY_GDB
 from ajrasakha.agents.translation_catalog import language_pair_from_plan, needs_translation, get_two_hour_disclaimer
 from ajrasakha.agents.llm_trace import trace_llm_request, trace_llm_response
@@ -96,7 +96,7 @@ async def _translate_body(
     if not text:
         return body or ""
 
-    llm = ChatAnthropic(model=TRANSLATE_MODEL)
+    llm = get_planner_chat_model(default_claude_model=TRANSLATE_MODEL)
     system_prompt = build_translate_system_prompt(script_language, vocal_language)
     human_msg = (
         f"Translate into {vocal_language} using the {script_language} "

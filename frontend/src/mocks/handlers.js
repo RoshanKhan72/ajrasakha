@@ -25,7 +25,80 @@ const next = (apiKey) => {
   return currentCount;
 };
 
+const mockQuestionsStore = [
+  {
+    _id: "q-101",
+    question: "What is the recommended fertilizer dosage for Paddy in Punjab during Kharif season?",
+    context: "Paddy crop nutrient management guidance",
+    priority: "medium",
+    status: "open",
+    source: "AGRI_EXPERT",
+    details: {
+      state: "Punjab",
+      district: "Amritsar",
+      crop: "Paddy",
+      season: "Kharif",
+      domain: ["Nutrient Management"],
+    },
+    createdAt: new Date().toISOString(),
+    answers: [],
+  },
+];
+
 export const handlers = [
+  http.get("*/api/questions*", async () => {
+    return HttpResponse.json({
+      totalCount: mockQuestionsStore.length,
+      totalPages: 1,
+      questions: mockQuestionsStore,
+    });
+  }),
+  http.post("*/api/questions", async ({ request }) => {
+    try {
+      const body = await request.json();
+      const newQuestion = {
+        _id: "q-" + Date.now(),
+        question: body.question || "New Question",
+        context: body.context || "",
+        priority: body.priority || "medium",
+        status: body.status || "open",
+        source: body.source || "AGRI_EXPERT",
+        details: body.details || {
+          state: body.state || "General",
+          district: body.district || "General",
+          crop: body.crop || "General",
+          season: body.season || "Kharif",
+          domain: [body.domain || "General"],
+        },
+        createdAt: new Date().toISOString(),
+        answers: [],
+      };
+      mockQuestionsStore.unshift(newQuestion);
+      return HttpResponse.json({ message: "Question created successfully", question: newQuestion }, { status: 201 });
+    } catch (e) {
+      return HttpResponse.json({ message: "Created" }, { status: 201 });
+    }
+  }),
+  http.get("*/api/users/details/*", async () => {
+    return HttpResponse.json({
+      _id: "dev-user-1",
+      email: "test@example.com",
+      name: "Admin User",
+      role: "admin",
+      status: "active",
+      isBlocked: false,
+    });
+  }),
+  http.get("*/api/users/me", async () => {
+    return HttpResponse.json({
+      _id: "dev-user-1",
+      email: "test@example.com",
+      name: "Admin User",
+      role: "admin",
+      status: "active",
+      isBlocked: false,
+    });
+  }),
   http.post(
     `${baseURL}/api/notifications/invite/courses/:courseId/versions/:versionId`,
     async () => {

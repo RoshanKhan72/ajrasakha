@@ -21,7 +21,7 @@ from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, System
 from langchain_core.runnables import RunnableConfig, patch_config
 from pydantic import BaseModel, Field
 
-from ajrasakha.agents.config import PLANNER_MODEL, resolve_thread_id, resolve_user_id
+from ajrasakha.agents.config import PLANNER_MODEL, get_planner_chat_model, resolve_thread_id, resolve_user_id
 from ajrasakha.agents.thread_logging import (
     begin_conversation_turn,
     end_conversation_turn,
@@ -514,8 +514,8 @@ async def _apply_domain_and_crop_async(
                 domain_remarks=policy.get("remarks", ""),
                 additional_remarks=additional_text,
                 default_crop_required=bool(policy.get("default_crop_required")),
-                llm=ChatAnthropic(
-                    model=PLANNER_MODEL,
+                llm=get_planner_chat_model(
+                    default_claude_model=PLANNER_MODEL,
                     max_tokens=16,
                     temperature=0,
                 ),
@@ -805,7 +805,7 @@ async def planner_node(
     )
 
     try:
-        planner_llm = ChatAnthropic(model=PLANNER_MODEL)
+        planner_llm = get_planner_chat_model(default_claude_model=PLANNER_MODEL)
         llm = planner_llm.with_structured_output(PlannerOutput)
         output = await llm.ainvoke(llm_messages, config=_planner_invoke_config(config))
         trace_llm_response(

@@ -31,6 +31,9 @@ DAILY_PRICE_MODEL = os.getenv("DAILY_PRICE_MODEL", MINIMAX_MODEL)  # Intent & sy
 MINIMAX_MAX_TOKENS = int(os.getenv("MINIMAX_MAX_TOKENS", "4096"))
 MINIMAX_TIMEOUT = float(os.getenv("MINIMAX_TIMEOUT", "60.0"))
 
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", os.getenv("GOOGLE_API_KEY", ""))
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
+GEMINI_BASE_URL = os.getenv("GEMINI_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai/")
 
 
 def get_minimax_chat_model(**overrides):
@@ -53,6 +56,26 @@ def get_minimax_chat_model(**overrides):
         api_key=MINIMAX_API_KEY,
         **defaults,
     )
+
+
+def get_planner_chat_model(default_claude_model: Optional[str] = None, **overrides):
+    """Return ChatOpenAI (Gemini 2.5 Flash Free) if GEMINI_API_KEY is set; otherwise ChatAnthropic.
+
+    When GEMINI_API_KEY is set, always uses GEMINI_MODEL ('gemini-2.5-flash') so no
+    Claude model names are passed to Google's API endpoint.
+    When GEMINI_API_KEY is absent, preserves original ChatAnthropic behavior.
+    """
+    if GEMINI_API_KEY:
+        from langchain_openai import ChatOpenAI
+        return ChatOpenAI(
+            model=GEMINI_MODEL,
+            base_url=GEMINI_BASE_URL,
+            api_key=GEMINI_API_KEY,
+            **overrides,
+        )
+    from langchain_anthropic import ChatAnthropic
+    return ChatAnthropic(model=default_claude_model or PLANNER_MODEL, **overrides)
+
 
 REMOTE_IP =   os.getenv("REMOTE_IP", "100.100.108.44")
 
